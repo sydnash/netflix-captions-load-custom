@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "eslint": "^7.31.0",
+    "ts-server": "^0.0.15"
+  },
+  "dependencies": {
+    "moment": "^2.29.1"
+  }
+}
