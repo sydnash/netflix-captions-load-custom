@@ -2,7 +2,7 @@ console.log("content js is executed")
 
 var curCaptions = null;
 var timeoffset = 0;
-var tswitch = 0;
+var tswitch = true;
 var listStyle = [];
 var netFlixInit = false;
 
@@ -115,7 +115,7 @@ function hiddenSubtitleCssInject(hideClassName) {
 //"end" : end,
 //"text" : text,
 function binaraySearch(cap, time) {
-    if (cap == 'undefined') {
+    if (cap == null) {
         return ""
     }
     let high = cap.length - 1;
@@ -199,15 +199,16 @@ function parseTime(timestr) {
 }
 
 function modifyOffset(ms) {
-    timeoffset += ms
+    timeoffset += ms;
+    console.log("timeoffset is: ", timeoffset);
 }
 
 function add() {
-    modifyOffset(1000)
+    modifyOffset(50)
 }
 
 function del() {
-    modifyOffset(-1000)
+    modifyOffset(-50)
 }
 
 function switchfn() {
@@ -230,6 +231,20 @@ function processSubtitle() {
         $('.SUBTILTE').remove();
     }
 }
+
+function initVideo() {
+    let videoPlayers = document.body.getElementsByTagName('video');
+    if (videoPlayers.length > 0) {
+        let player = videoPlayers[0];
+        player.ontimeupdate = function (e) { 
+            let ct = e.target.currentTime * 1000;
+            ct += timeoffset;
+            let cap = binaraySearch(curCaptions, ct);
+            showCap(cap)
+        };
+    }
+}
+
 
 var mainDiv = document.createElement('div');
 mainDiv.className = "cap-s-top-right"
@@ -259,6 +274,7 @@ if (hasNetflix) {
         function() {
             netFlixInit = true;
             processSubtitle();
+            initVideo();
         }
     );
 }
@@ -276,14 +292,16 @@ function showCap(str) {
 }
 
 // use timer
-let curTime = 0;
-let timeout = 100;
-let loop = function() {
-    if (curCaptions != null) {
-        curTime += timeout;
-        let cap = binaraySearch(curCaptions, curTime + timeoffset);
-        showCap(cap);
-    }
-    setTimeout(loop, timeout);
-}
-setTimeout(loop, timeout);
+//let curTime = 0;
+//let timeout = 100;
+//let loop = function() {
+//    if (curCaptions != null) {
+//        curTime += timeout;
+//        let cap = binaraySearch(curCaptions, curTime + timeoffset);
+//        showCap(cap);
+//    }
+//    setTimeout(loop, timeout);
+//}
+//setTimeout(loop, timeout);
+//
+
