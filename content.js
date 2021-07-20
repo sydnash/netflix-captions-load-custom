@@ -2,6 +2,106 @@ console.log("content js is executed")
 
 var curCaptions = null;
 var timeoffset = 0;
+var tswitch = 0;
+var listStyle = [];
+var netFlixInit = false;
+
+
+const getOriginText = () => {
+    let obj_text = '';
+    let a = $('.player-timedtext-text-container')
+        .find('span');
+    for (let i = 0; i < a.length; i++) {
+        let span = a[i];
+        obj_text += (span.innerText + ' ')
+            .replace('<br>', ' ')
+            .replace(/\[(.+)\]/, '');
+    }
+    return obj_text;
+};
+
+/**
+ * replace subtitle to screen
+ * @param domClass
+ * @param textInfo:object {origin,translate}
+ */
+function dealSubtitle(
+    domClass,
+    request
+) {
+    chrome.storage.sync.get(null, (items) => {
+        items = {
+            'origin_color': "#FFFFFF",
+            'origin_weight': "bold",
+            'origin_font': "15",
+            'trans_color': "#FFFFFF",
+            'trans_weight': "bold",
+            'trans_font': "15",
+        }
+        const subtitle = `<div class="SUBTILTE"
+    style="
+    position: absolute;
+    bottom:30px;
+    width:100%;
+    text-align: center;
+    margin: 0 .5em 1em;
+    padding: 20px 8px;
+    white-space: pre-line;
+    writing-mode: horizontal-tb;
+    unicode-bidi: plaintext;
+    direction: ltr;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    background: ${items['backgroundColor']};
+    opacity: ${items['backgroundOpacity']};
+  ">
+     <div class="origin_subtitle"
+      style="
+          color:${items['origin_color']} !important;
+          font-weight:${items['origin_weight']} !important;
+          font-size:${items['origin_font']}px !important;;
+      "
+     >${request.origin}</div>
+      <div class="translate_subtitle"
+      style="
+          color: ${items['trans_color']} !important;
+          font-weight:${items['trans_weight']} !important;
+          font-size: ${items['trans_font']}px !important;
+      "
+      >${request.translate}</div>
+  </div>`;
+        let hasSubtitleDom = $('div.SUBTILTE').length === 0;
+        if (hasSubtitleDom) {
+            $(domClass).after(subtitle);
+        } else {
+            $('div.SUBTILTE').remove();
+            $(domClass).after(subtitle);
+        }
+    });
+}
+
+
+/**
+ * hidden subtitle function
+ * @param hideClassName
+ */
+function hiddenSubtitleCssInject(hideClassName) {
+    let css = '';
+
+    hideClassName.forEach((item) => {
+        css += `${hideClassName}{display:none !important} \n`;
+    });
+    let style = $(`<style id='chrome-extension-plugin-css'>
+    ${css}
+  </style>`);
+    $('body').append(style);
+    return style;
+    // const head = document.getElementsByTagName('head')[0];
+    // const style = document.createElement('style');
+    // style.id = 'chrome-extension-plugin-css';
+    // style.appendChild(document.createTextNode(css));
+    // head.appendChild(style);
+}
 
 //chrome.storage.local.get('currentCaptions', (
 //    currentCaptions
@@ -33,8 +133,6 @@ function binaraySearch(cap, time) {
     }
     return "";
 }
-
-
 
 function upload() {
     if (document.getElementById('file') != null) {
@@ -100,33 +198,91 @@ function parseTime(timestr) {
     return ms
 }
 
+function modifyOffset(ms) {
+    timeoffset += ms
+}
+
+function add() {
+    modifyOffset(1000)
+}
+
+function del() {
+    modifyOffset(-1000)
+}
+
+function switchfn() {
+    tswitch = !tswitch;
+    processSubtitle();
+}
+
+function processSubtitle() {
+    if (!netFlixInit) {
+        return
+    }
+    if (tswitch) {
+        listStyle = []
+        listStyle.push(hiddenSubtitleCssInject([
+            '.player-timedtext-text-container',
+            '.mejs-captions-text',
+        ]))
+    } else {
+        listStyle.forEach((item) => item.remove());
+        $('.SUBTILTE').remove();
+    }
+}
+
 var mainDiv = document.createElement('div');
 mainDiv.className = "cap-s-top-right"
 mainDiv.id = "maindiv"
 
-let btns = ["load", "add", "del"];
-let fns = [upload, ];
+let btns = ["load", "add", "del", "switch"];
+let fns = [upload, add, del, switchfn];
 for (let i = 0; i < btns.length; i++) {
     let name = btns[i];
-    let btn = document.createElement('button')
-    btn.textContent = name
-    btn.id = name
-    mainDiv.appendChild(btn)
+    let btn = document.createElement('cap-button');
+    btn.textContent = name;
+    btn.id = name;
+    mainDiv.appendChild(btn);
 
     if (i < fns.length) {
         btn.addEventListener("click", fns[i]);
     }
 }
+document.body.appendChild(mainDiv);
 
-document.body.appendChild(mainDiv)
+var hasNetflix = window.location.href.includes("netflix");
+console.log("has netflix", hasNetflix)
+if (hasNetflix) {
+    $('body').on(
+        'DOMNodeInserted',
+        '.player-timedtext-text-container',
+        function() {
+            netFlixInit = true;
+            processSubtitle();
+        }
+    );
+}
 
+function showCap(str) {
+    console.log(str)
+    if (hasNetflix && netFlixInit && tswitch) {
+        let ori = getOriginText();
+        let request = {
+            "origin": ori,
+            "translate": str,
+        };
+        dealSubtitle('.player-timedtext', request);
+    }
+}
 
+// use timer
 let curTime = 0;
 let timeout = 100;
 let loop = function() {
     if (curCaptions != null) {
         curTime += timeout;
-        console.log(binaraySearch(curCaptions, curTime));
+        let cap = binaraySearch(curCaptions, curTime + timeoffset);
+        showCap(cap);
     }
     setTimeout(loop, timeout);
 }
