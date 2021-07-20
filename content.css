@@ -16,5 +16,6 @@ cap-button {
     margin: 10px;
     border: none;
     border-radius: 2px;
-    background-color: white;
+    background-color: blue;
+    font-color: #000000;
 }

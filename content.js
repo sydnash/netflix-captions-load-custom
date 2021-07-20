@@ -198,9 +198,14 @@ function parseTime(timestr) {
     return ms
 }
 
+var input = null;
+
 function modifyOffset(ms) {
     timeoffset += ms;
     console.log("timeoffset is: ", timeoffset);
+    if (input != null) {
+        input.value = timeoffset;
+    }
 }
 
 function add() {
@@ -236,7 +241,7 @@ function initVideo() {
     let videoPlayers = document.body.getElementsByTagName('video');
     if (videoPlayers.length > 0) {
         let player = videoPlayers[0];
-        player.ontimeupdate = function (e) { 
+        player.ontimeupdate = function(e) {
             let ct = e.target.currentTime * 1000;
             ct += timeoffset;
             let cap = binaraySearch(curCaptions, ct);
@@ -263,21 +268,32 @@ for (let i = 0; i < btns.length; i++) {
         btn.addEventListener("click", fns[i]);
     }
 }
+
+input = document.createElement("input")
+input.type = 'number'
+input.value = timeoffset;
+input.style.backgroundColor = 'blue';
+input.onchange = function(e) {
+    console.log(e.target.value);
+    timeoffset = Number(e.target.value);
+}
+mainDiv.appendChild(input)
+
 document.body.appendChild(mainDiv);
 
 var hasNetflix = window.location.href.includes("netflix");
 console.log("has netflix", hasNetflix)
-if (hasNetflix) {
-    $('body').on(
-        'DOMNodeInserted',
-        '.player-timedtext-text-container',
-        function() {
-            netFlixInit = true;
-            processSubtitle();
-            initVideo();
-        }
-    );
-}
+//if (hasNetflix) {
+//    $('body').on(
+//        'DOMNodeInserted',
+//        '.player-timedtext-text-container',
+//        function() {
+//            netFlixInit = true;
+//            processSubtitle();
+//            initVideo();
+//        }
+//    );
+//}
 
 function showCap(str) {
     console.log(str)
@@ -292,16 +308,21 @@ function showCap(str) {
 }
 
 // use timer
-//let curTime = 0;
-//let timeout = 100;
-//let loop = function() {
-//    if (curCaptions != null) {
-//        curTime += timeout;
-//        let cap = binaraySearch(curCaptions, curTime + timeoffset);
-//        showCap(cap);
-//    }
-//    setTimeout(loop, timeout);
-//}
-//setTimeout(loop, timeout);
-//
-
+let curTime = 0;
+let timeout = 100;
+let loop = function() {
+    //if (curCaptions != null) {
+    //    curTime += timeout;
+    //    let cap = binaraySearch(curCaptions, curTime + timeoffset);
+    //    showCap(cap);
+    //}
+    let videoPlayers = document.body.getElementsByTagName('video');
+    if (videoPlayers.length > 0) {
+        netFlixInit = true;
+        processSubtitle();
+        initVideo();
+        return
+    }
+    setTimeout(loop, timeout);
+}
+setTimeout(loop, timeout);
