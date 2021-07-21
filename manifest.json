@@ -1,6 +1,6 @@
 {
-  "name": "Getting Started Example",
-  "description": "Build an Extension!",
+  "name": "netflix captions",
+  "description": "can load .dfxp captions file on netflix video.",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
@@ -17,7 +17,7 @@
  "content_scripts": [
    {
      "matches": [
-         "https://*.baiduxx.com/*",
+         "https://*.baidu.comxx/*",
          "https://*.netflix.com/watch/*"
      ],
      "css": ["content.css"],

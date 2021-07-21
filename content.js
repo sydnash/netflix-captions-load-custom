@@ -337,7 +337,7 @@ function initUI() {
     input = document.createElement("input")
     input.type = 'number'
     input.value = timeoffset;
-    input.style.backgroundColor = 'blue';
+    input.style.backgroundColor = '#4e6ef2';
     input.onchange = function(e) {
         console.log(e.target.value);
         timeoffset = Number(e.target.value);
