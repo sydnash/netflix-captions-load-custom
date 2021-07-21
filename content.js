@@ -20,6 +20,60 @@ const getOriginText = () => {
     return obj_text;
 };
 
+// Reads all data out of storage.sync and exposes it via a promise.
+//
+// Note: Once the Storage API gains promise support, this function
+// can be greatly simplified.
+function getAllStorageSyncData() {
+    // Immediately return a promise and start asynchronous work
+    return new Promise((resolve, reject) => {
+        // Asynchronously fetch all data from storage.sync.
+        chrome.storage.sync.get(null, (items) => {
+            // Pass any observed errors down the promise chain.
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
+            }
+            // Pass the data retrieved from storage down the promise chain.
+            resolve(items);
+        });
+    });
+}
+
+// Where we will expose all the data we retrieve from storage.sync.
+var storageCache = {};
+// Asynchronously retrieve data from storage.sync, then cache it.
+const initStorageCache = getAllStorageSyncData().then(items => {
+    // Copy the data retrieved from storage into storageCache.
+    Object.assign(storageCache, items);
+});
+
+const syncInitStorageCache = async function() {
+    await initStorageCache;
+}
+
+try {
+    syncInitStorageCache();
+    console.log("after init storage cache: ", storageCache);
+} catch (e) {}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+    console.log("on storage changed before: ", storageCache);
+    for (let [key, {
+            oldValue,
+            newValue
+        }] of Object.entries(changes)) {
+        console.log(
+            `"Storage key "${key}" in namespace "${area}" changed.`,
+            `Old value was "${oldValue}", new value is "${newValue}".`
+        );
+        if (area == 'sync') {
+            storageCache[key] = newValue;
+        }
+    }
+    storageCache[area] = changes.options?.newValue;
+    console.log("on storage changed end: ", storageCache);
+});
+
 /**
  * replace subtitle to screen
  * @param domClass
@@ -29,16 +83,19 @@ function dealSubtitle(
     domClass,
     request
 ) {
-    chrome.storage.sync.get(null, (items) => {
-        items = {
-            'origin_color': "#FFFFFF",
-            'origin_weight': "bold",
-            'origin_font': "15",
-            'trans_color': "#FFFFFF",
-            'trans_weight': "bold",
-            'trans_font': "15",
-        }
-        const subtitle = `<div class="SUBTILTE"
+    //chrome.storage.sync.get(null, (items) => {
+    items = {
+        'origin_color': "#FFFFFF",
+        'origin_weight': "bold",
+        'origin_font': "15",
+        'trans_color': "#FFFFFF",
+        'trans_weight': "bold",
+        'trans_font': "15",
+    }
+    for (let [key, value] of storageCache) {
+        items[key] = v;
+    }
+    const subtitle = `<div class="SUBTILTE"
     style="
     position: absolute;
     bottom:30px;
@@ -70,14 +127,14 @@ function dealSubtitle(
       "
       >${request.translate}</div>
   </div>`;
-        let hasSubtitleDom = $('div.SUBTILTE').length === 0;
-        if (hasSubtitleDom) {
-            $(domClass).after(subtitle);
-        } else {
-            $('div.SUBTILTE').remove();
-            $(domClass).after(subtitle);
-        }
-    });
+    let hasSubtitleDom = $('div.SUBTILTE').length === 0;
+    if (hasSubtitleDom) {
+        $(domClass).after(subtitle);
+    } else {
+        $('div.SUBTILTE').remove();
+        $(domClass).after(subtitle);
+    }
+    //});
 }
 
 
