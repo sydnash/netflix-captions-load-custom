@@ -17,7 +17,7 @@
  "content_scripts": [
    {
      "matches": [
-         "https://*.baidu.com/*",
+         "https://*.baiduxx.com/*",
          "https://*.netflix.com/watch/*"
      ],
      "css": ["content.css"],
