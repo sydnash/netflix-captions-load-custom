@@ -216,8 +216,14 @@ function del() {
     modifyOffset(-50)
 }
 
-function switchfn() {
+function switchfn(e) {
     tswitch = !tswitch;
+    if (tswitch) {
+        e.target.textContent = "swithoff";
+    } else {
+        e.target.textContent = "swithon";
+    }
+    console.log("switch: ", tswitch);
     processSubtitle();
 }
 
@@ -255,7 +261,7 @@ var mainDiv = document.createElement('div');
 mainDiv.className = "cap-s-top-right"
 mainDiv.id = "maindiv"
 
-let btns = ["load", "add", "del", "switch"];
+let btns = ["load", "add", "sub", "switchoff"];
 let fns = [upload, add, del, switchfn];
 for (let i = 0; i < btns.length; i++) {
     let name = btns[i];
@@ -268,7 +274,6 @@ for (let i = 0; i < btns.length; i++) {
         btn.addEventListener("click", fns[i]);
     }
 }
-
 input = document.createElement("input")
 input.type = 'number'
 input.value = timeoffset;
@@ -278,7 +283,6 @@ input.onchange = function(e) {
     timeoffset = Number(e.target.value);
 }
 mainDiv.appendChild(input)
-
 document.body.appendChild(mainDiv);
 
 var hasNetflix = window.location.href.includes("netflix");
@@ -295,6 +299,20 @@ console.log("has netflix", hasNetflix)
 //    );
 //}
 
+var preRequest = null
+
+function isSameRequest(req) {
+    let tmp = preRequest
+    preRequest = req
+    if (tmp == null) {
+        return false
+    }
+    if (tmp.origin == req.origin && tmp.translate == req.translate) {
+        return true
+    }
+    return false
+}
+
 function showCap(str) {
     console.log(str)
     if (hasNetflix && netFlixInit && tswitch) {
@@ -303,7 +321,9 @@ function showCap(str) {
             "origin": ori,
             "translate": str,
         };
-        dealSubtitle('.player-timedtext', request);
+        if (!isSameRequest(request)) {
+            dealSubtitle('.player-timedtext', request);
+        }
     }
 }
 
@@ -311,17 +331,20 @@ function showCap(str) {
 let curTime = 0;
 let timeout = 100;
 let loop = function() {
-    //if (curCaptions != null) {
-    //    curTime += timeout;
-    //    let cap = binaraySearch(curCaptions, curTime + timeoffset);
-    //    showCap(cap);
-    //}
-    let videoPlayers = document.body.getElementsByTagName('video');
-    if (videoPlayers.length > 0) {
-        netFlixInit = true;
-        processSubtitle();
-        initVideo();
-        return
+    if (hasNetflix) {
+        let videoPlayers = document.body.getElementsByTagName('video');
+        if (videoPlayers.length > 0) {
+            netFlixInit = true;
+            processSubtitle();
+            initVideo();
+            return
+        }
+    } else {
+        if (curCaptions != null) {
+            curTime += timeout;
+            let cap = binaraySearch(curCaptions, curTime + timeoffset);
+            showCap(cap);
+        }
     }
     setTimeout(loop, timeout);
 }
