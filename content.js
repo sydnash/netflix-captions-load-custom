@@ -74,6 +74,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     console.log("on storage changed end: ", storageCache);
 });
 
+var optionsKeys = ["origin_font", "origin_color", "trans_font", "trans_color"]
 /**
  * replace subtitle to screen
  * @param domClass
@@ -84,7 +85,7 @@ function dealSubtitle(
     request
 ) {
     //chrome.storage.sync.get(null, (items) => {
-    items = {
+    let items = {
         'origin_color': "#FFFFFF",
         'origin_weight': "bold",
         'origin_font': "15",
@@ -92,8 +93,10 @@ function dealSubtitle(
         'trans_weight': "bold",
         'trans_font': "15",
     }
-    for (let [key, value] of storageCache) {
-        items[key] = v;
+    for (let key  of optionsKeys) {
+        if (storageCache[key] != undefined) {
+            items[key] = storageCache[key];
+        }
     }
     const subtitle = `<div class="SUBTILTE"
     style="
