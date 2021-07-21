@@ -18,7 +18,7 @@
    {
      "matches": [
          "https://*.baidu.com/*",
-         "https://*.netflix.com/*"
+         "https://*.netflix.com/watch/*"
      ],
      "css": ["content.css"],
      "js": ["jquery-2.0.2.js", "content.js"]

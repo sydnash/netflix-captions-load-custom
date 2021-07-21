@@ -93,7 +93,7 @@ function dealSubtitle(
         'trans_weight': "bold",
         'trans_font': "15",
     }
-    for (let key  of optionsKeys) {
+    for (let key of optionsKeys) {
         if (storageCache[key] != undefined) {
             items[key] = storageCache[key];
         }
@@ -316,37 +316,41 @@ function initVideo() {
     }
 }
 
+function initUI() {
+    var mainDiv = document.createElement('div');
+    mainDiv.className = "cap-s-top-right"
+    mainDiv.id = "maindiv"
 
-var mainDiv = document.createElement('div');
-mainDiv.className = "cap-s-top-right"
-mainDiv.id = "maindiv"
+    let btns = ["load", "add", "sub", "switchoff"];
+    let fns = [upload, add, del, switchfn];
+    for (let i = 0; i < btns.length; i++) {
+        let name = btns[i];
+        let btn = document.createElement('cap-button');
+        btn.textContent = name;
+        btn.id = name;
+        mainDiv.appendChild(btn);
 
-let btns = ["load", "add", "sub", "switchoff"];
-let fns = [upload, add, del, switchfn];
-for (let i = 0; i < btns.length; i++) {
-    let name = btns[i];
-    let btn = document.createElement('cap-button');
-    btn.textContent = name;
-    btn.id = name;
-    mainDiv.appendChild(btn);
-
-    if (i < fns.length) {
-        btn.addEventListener("click", fns[i]);
+        if (i < fns.length) {
+            btn.addEventListener("click", fns[i]);
+        }
     }
+    input = document.createElement("input")
+    input.type = 'number'
+    input.value = timeoffset;
+    input.style.backgroundColor = 'blue';
+    input.onchange = function(e) {
+        console.log(e.target.value);
+        timeoffset = Number(e.target.value);
+    }
+    mainDiv.appendChild(input);
+    document.body.appendChild(mainDiv);
 }
-input = document.createElement("input")
-input.type = 'number'
-input.value = timeoffset;
-input.style.backgroundColor = 'blue';
-input.onchange = function(e) {
-    console.log(e.target.value);
-    timeoffset = Number(e.target.value);
-}
-mainDiv.appendChild(input)
-document.body.appendChild(mainDiv);
 
 var hasNetflix = window.location.href.includes("netflix");
 console.log("has netflix", hasNetflix)
+if (!hasNetflix) {
+    initUI();
+}
 //if (hasNetflix) {
 //    $('body').on(
 //        'DOMNodeInserted',
@@ -395,6 +399,7 @@ let loop = function() {
         let videoPlayers = document.body.getElementsByTagName('video');
         if (videoPlayers.length > 0) {
             netFlixInit = true;
+            initUI();
             processSubtitle();
             initVideo();
             return
