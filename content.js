@@ -88,10 +88,10 @@ function dealSubtitle(
     let items = {
         'origin_color': "#FFFFFF",
         'origin_weight': "bold",
-        'origin_font': "15",
+        'origin_font': "35",
         'trans_color': "#FFFFFF",
         'trans_weight': "bold",
-        'trans_font': "15",
+        'trans_font': "35",
     }
     for (let key of optionsKeys) {
         if (storageCache[key] != undefined) {
