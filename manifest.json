@@ -6,7 +6,7 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage"],
   "icons": {
     "16": "/images/get_started16.png",
     "32": "/images/get_started32.png",
@@ -17,7 +17,6 @@
  "content_scripts": [
    {
      "matches": [
-         "https://*.baidu.comxx/*",
          "https://*.netflix.com/watch/*"
      ],
      "css": ["content.css"],
