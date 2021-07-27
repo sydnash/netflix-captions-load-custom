@@ -76,7 +76,7 @@ function parseDFXP(file) {
             };
             currentCaptions.push(v);
         }
-        console.log(currentCaptions)
+        //console.log(currentCaptions)
         chrome.storage.local.set({ currentCaptions: currentCaptions });
     }
 }

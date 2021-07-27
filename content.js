@@ -5,7 +5,13 @@ var timeoffset = 0;
 var tswitch = true;
 var listStyle = [];
 var netFlixInit = false;
+var debug = false;
 
+customlog = (...data) => {
+    if (debug === true) {
+        console.log(data)
+    }
+}
 
 const getOriginText = () => {
     let obj_text = '';
@@ -211,7 +217,7 @@ function upload() {
     }
     document.querySelector('#file').addEventListener('change', e => {
         for (let entry of e.target.files) {
-            console.log(entry.name, entry.webkitRelativePath);
+            customlog(entry.name, entry.webkitRelativePath);
             parseDFXP(entry);
         }
     });
@@ -221,7 +227,7 @@ function parseDFXP(file) {
     var reader = new FileReader();
     reader.readAsText(file);
     reader.onloadend = function(event) {
-        console.log(event.target.result);
+        customlog(event.target.result);
         let parser = new DOMParser();
         let doc = parser.parseFromString(event.target.result, 'text/xml');
         let root = doc.getElementsByTagName('div')[0];
@@ -239,7 +245,7 @@ function parseDFXP(file) {
             };
             currentCaptions.push(v);
         }
-        console.log(currentCaptions)
+        customlog(currentCaptions)
         curCaptions = currentCaptions
     }
 }
@@ -378,7 +384,7 @@ function isSameRequest(req) {
 }
 
 function showCap(str) {
-    console.log(str)
+    customlog(str)
     if (hasNetflix && netFlixInit && tswitch) {
         let ori = getOriginText();
         let request = {
