@@ -7,9 +7,9 @@ var listStyle = [];
 var netFlixInit = false;
 var debug = false;
 
-customlog = (...data) => {
+function customlog(...data) {
     if (debug === true) {
-        console.log(data)
+        console.log(...data)
     }
 }
 
